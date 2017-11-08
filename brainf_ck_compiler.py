@@ -4,37 +4,49 @@ import click
 @click.command()
 @click.argument('brainf_ck', type=click.File('r'))
 @click.option('-o', nargs=1, type=click.File('w'))
-def CCompiler(brainf_ck, o):
 
-	bfck_dict = {
-		">": "\t++ptr;\n",
-       	    "<": "\t--ptr;\n",
-       	    "+": "\t++(*ptr);\n",
-       	    "-": "\t--(*ptr);\n",
-       	    ".": """\tprintf("%c",(*ptr));\n""",
-       	    ",": """\tscanf("%c",ptr);\n""",
-       	    "[": """\twhile(*ptr) {\n\t""",
-       	    "]": "\t\n}\n",
-	}
 
-	CInit = """#include <stdio.h>
+def c_compiler(brainf_ck, o):
+
+    bfck_dict = {
+        ">": "++ptr;\n",
+        "<": "--ptr;\n",
+        "+": "++(*ptr);\n",
+        "-": "--(*ptr);\n",
+        ".": """printf("%c",(*ptr));\n""",
+        ",": """scanf("%c",ptr);\n""",
+        "[": """while(*ptr) {\n""",
+        "]": "}\n",
+    }
+
+    c_init = """#include <stdio.h>
 #include <stdlib.h>
 
 int main(void) {
-	char *tape = malloc(sizeof(char)*40000);
-	char *ptr = &tape[0];
+    char *tape = malloc(sizeof(char)*40000);
+    char *ptr = &tape[0];
 """
 
-	source = brainf_ck.read()
-	for data in source:
-		if data in bfck_dict:
-			CInit = CInit + bfck_dict[data]
+    number_indentations = 1
 
-	CInit = CInit + """\tprintf("\\n");\n\treturn 0;\n}"""
+    source = brainf_ck.read()
+    for data in source:
+        if data in bfck_dict:
+            if data == "[":
+                c_init = c_init + "\n" + ("\t" * number_indentations) + bfck_dict[data]
+                number_indentations = number_indentations + 1
+            elif data == "]":
+                number_indentations = number_indentations - 1
+                c_init = c_init + ("\t" * number_indentations) + bfck_dict[data] + "\n"
+            else:
+                c_init = c_init + ("\t" * number_indentations) + bfck_dict[data]
 
-	o.write(CInit)
-	o.flush()
+
+    c_init = c_init + """\tprintf("\\n");\n\treturn 0;\n}"""
+
+    o.write(c_init)
+    o.flush()
 
 
 if __name__ == "__main__":
-    op = CCompiler()
+    op = c_compiler()
