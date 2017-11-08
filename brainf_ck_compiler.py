@@ -23,8 +23,8 @@ def c_compiler(brainf_ck, o):
 #include <stdlib.h>
 
 int main(void) {
-    char *tape = malloc(sizeof(char)*40000);
-    char *ptr = &tape[0];
+\tchar *tape = malloc(sizeof(char)*40000);
+\tchar *ptr = &tape[0];
 """
 
     number_indentations = 1
